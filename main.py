@@ -30,6 +30,12 @@ def root():
     else:
         print('400')
         return 400
+
+    if 'user_id' in request.args:
+        user=args.get('user_id')
+    else:
+        user='api_user'
+    
     # Fetch the most recent 10 access times from Datastore.
     limit=10
     times = fetch_times(limit)
