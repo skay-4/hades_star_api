@@ -20,6 +20,7 @@ def store_data(rs_level):
         u'users': ['api_user','api_user']})
 
 
+
 def check_if_in_queue(user_id):
     queues_obj=db.collection('red_star_groups').where(u'users', u'array_contains', user_id)
     queues= queues_obj.stream()
@@ -36,6 +37,7 @@ async def queue_add():
     if 'lvl' in request.args and 'room_left' in request.args:
         lvl=args.get('lvl')
         print(lvl)
+        queues_obj=db.collection('red_star_groups').where(u'red_star_level', u'==', int(lvl)).where(u'queue_type', u'==', 'network')
     else:
         res_json={'response':{'status':400,'content':{'error':'missing parameter'}}}
         return res_json
