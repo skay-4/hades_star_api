@@ -1,9 +1,9 @@
 from threading import local
 from flask import Flask, render_template,request
 from requests.models import Response
-
+import pandas as pd
 from google.cloud import firestore
-
+import pandas as pd
 app = Flask(__name__)
 db = firestore.Client(project='skaynet-356400')
 
@@ -31,13 +31,12 @@ def check_if_in_queue(user_id):
         print(queue_dict)
 
 
-@app.route('/queue_add')
+@app.route('/queue_add') #This may happen in the discord bot
 async def queue_add():
     args = request.args
     if 'lvl' in request.args and 'room_left' in request.args:
         lvl=args.get('lvl')
         print(lvl)
-        queues_obj=db.collection('red_star_groups').where(u'red_star_level', u'==', int(lvl)).where(u'queue_type', u'==', 'network')
     else:
         res_json={'response':{'status':400,'content':{'error':'missing parameter'}}}
         return res_json
@@ -47,7 +46,7 @@ async def queue_add():
         users.split(',')
     else:
         user='api_user'
-    return '200'
+    return {'response':{'status':200,'content':{'today':'2022-08-31'}}}
     
 
 
@@ -59,10 +58,17 @@ async def player_request():
     if 'number' in args and 'lvl' in args:
         number=args.get('number')
         lvl=args.get('lvl')
-
+        queues_obj=db.collection('red_star_groups').where(u'red_star_level', u'==', 5)
+        queues=pd.DataFrame()
+        for t in queues_obj.stream():
+            queues=pd.concat((queues,pd.DataFrame(t.to_dict())),axis=0)
+        queues['create_time']=queues['create_time'].apply(pd.to_datetime)
+        for row in queues.sort_values(by='create_time',ascending=True):
+            group_size=len(row[1]['users']) #stop the loop when it finds a matching group
+            #Remove from database if it matches
     else:
         print('missing argument: number')
-    return '200'
+    return '200 2022-08-31'
 
 app.run(host='localhost',port=8080)
 
